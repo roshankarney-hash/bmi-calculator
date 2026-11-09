@@ -37,10 +37,10 @@ const BMI_RANGES = {
 };
 
 const CATEGORY_COLORS = {
-    Underweight: "#38bdf8",
-    Normal: "#34d399",
-    Overweight: "#fbbf24",
-    Obese: "#fb7185",
+    Underweight: "#6f9bc4",
+    Normal: "#c9a24b",
+    Overweight: "#d08c3c",
+    Obese: "#c05b4d",
 };
 
 const RECOMMENDATIONS = {
@@ -62,7 +62,6 @@ let countAnim = null;                                // count-up animation handl
 // GET HTML ELEMENTS
 // ==========================================
 
-const themeToggle = document.getElementById("themeToggle");
 const unitMetricBtn = document.getElementById("unitMetric");
 const unitImperialBtn = document.getElementById("unitImperial");
 
@@ -93,31 +92,14 @@ const trendChart = document.getElementById("trendChart");
 const chartBlock = document.getElementById("chartBlock");
 const confettiCanvas = document.getElementById("confettiCanvas");
 
-const DEFAULT_BMI_COLOR = "var(--accent)";
-const DEFAULT_CATEGORY_COLOR = "var(--text-soft)";
+const DEFAULT_BMI_COLOR = "var(--gold)";
+const DEFAULT_CATEGORY_COLOR = "var(--text-muted)";
 
 const dateFmt = new Intl.DateTimeFormat(undefined, {
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-});
-
-// ==========================================
-// THEME
-// ==========================================
-
-function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    themeToggle.setAttribute("aria-pressed", String(theme === "light"));
-    store.set("bmi-theme", theme);
-    renderTrendChart(); // chart colors follow the theme
-}
-
-themeToggle.addEventListener("click", () => {
-    const current = document.documentElement.dataset.theme === "light"
-        ? "dark" : "light";
-    applyTheme(current);
 });
 
 // ==========================================
@@ -416,7 +398,7 @@ function renderTrendChart() {
     ctx.clearRect(0, 0, W, H);
 
     const styles = getComputedStyle(document.documentElement);
-    const textMain = styles.getPropertyValue("--text-main").trim() || "#fff";
+    const textMain = styles.getPropertyValue("--text").trim() || "#ece5d8";
 
     const values = data.map((d) => parseFloat(d.bmi));
     const lo = Math.min(...values) - 1.5;
@@ -429,10 +411,10 @@ function renderTrendChart() {
 
     // Healthy-range zone bands (under / normal / over / obese)
     const zones = [
-        [lo, 18.5, "56, 189, 248"],
-        [18.5, 25, "52, 211, 153"],
-        [25, 30, "251, 191, 36"],
-        [30, hi, "251, 113, 133"],
+        [lo, 18.5, "111, 155, 196"],
+        [18.5, 25, "201, 162, 75"],
+        [25, 30, "208, 140, 60"],
+        [30, hi, "192, 91, 77"],
     ];
     zones.forEach(([from, to, rgb]) => {
         if (to <= lo || from >= hi) return;
@@ -449,8 +431,8 @@ function renderTrendChart() {
 
     // Trend line
     const gradient = ctx.createLinearGradient(0, 0, W, 0);
-    gradient.addColorStop(0, "#6366f1");
-    gradient.addColorStop(1, "#ec4899");
+    gradient.addColorStop(0, "#a8823c");
+    gradient.addColorStop(1, "#e2c06a");
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 2.5;
     ctx.lineJoin = "round";
@@ -491,8 +473,8 @@ let confettiPieces = [];
 let confettiFrame = null;
 
 const CONFETTI_COLORS = [
-    "#6366f1", "#8b5cf6", "#ec4899",
-    "#22d3ee", "#34d399", "#fbbf24",
+    "#c9a24b", "#e2c06a", "#8f6b2e",
+    "#ece5d8", "#b98a3a", "#f4ead2",
 ];
 
 function fireConfetti() {
@@ -635,7 +617,7 @@ resetBtn.addEventListener("click", function () {
         "Your recommendation will appear here.";
 
     // Reset ring and gauge
-    ringProgress.style.stroke = "var(--accent)";
+    ringProgress.style.stroke = "var(--gold)";
     ringProgress.style.color = "";
     ringProgress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
     gaugeMarker.style.opacity = "0";
@@ -656,11 +638,6 @@ resetBtn.addEventListener("click", function () {
 // ==========================================
 // INITIALIZE
 // ==========================================
-
-document.documentElement.dataset.theme =
-    store.get("bmi-theme", "dark");
-themeToggle.setAttribute("aria-pressed",
-    String(document.documentElement.dataset.theme === "light"));
 
 setUnitSystem(unitSystem, { convert: false });
 renderHistory();
