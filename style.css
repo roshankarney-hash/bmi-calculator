@@ -53,11 +53,7 @@ body {
     width: 460px;
     max-width: 100%;
     padding: 44px 40px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top-color: var(--border-strong);
-    border-radius: 10px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    background: transparent;
     animation: cardIn 0.5s ease-out;
 }
 
@@ -79,16 +75,8 @@ body {
    ============================== */
 
 .card-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    text-align: center;
     margin-bottom: 26px;
-}
-
-.rule {
-    flex: 1;
-    height: 1px;
-    background: var(--border-strong);
 }
 
 .wordmark {
@@ -160,12 +148,6 @@ h1 {
     border-bottom-color: var(--gold);
 }
 
-.unit-divider {
-    width: 1px;
-    height: 14px;
-    background: var(--border-strong);
-}
-
 
 /* ==============================
    INPUTS
@@ -192,13 +174,14 @@ h1 {
 
 .input-group input {
     width: 100%;
-    padding: 12px 14px;
+    padding: 10px 2px;
     font-family: inherit;
     font-size: 15px;
     color: var(--text);
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
     outline: none;
     transition: border-color 0.25s;
 }
@@ -208,7 +191,7 @@ h1 {
 }
 
 .input-group input:focus {
-    border-color: var(--gold);
+    border-bottom-color: var(--gold);
 }
 
 /* Hide number spinners */
@@ -283,12 +266,11 @@ button {
     flex: 1;
     color: var(--text-muted);
     background: none;
-    border-color: var(--border-strong);
+    border-color: transparent;
 }
 
 .reset-btn:hover {
-    color: var(--text);
-    border-color: var(--gold);
+    color: var(--gold);
 }
 
 .text-btn {
@@ -487,7 +469,6 @@ button {
     margin-top: 22px;
     padding: 16px 0 0;
     text-align: left;
-    border-top: 1px solid var(--border);
 }
 
 #recommendation h3 {
@@ -515,7 +496,6 @@ button {
 .history {
     margin-top: 28px;
     padding-top: 22px;
-    border-top: 1px solid var(--border);
     text-align: left;
 }
 
@@ -540,11 +520,6 @@ button {
     align-items: center;
     gap: 12px;
     padding: 11px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.history-item:last-child {
-    border-bottom: none;
 }
 
 .history-dot {
@@ -638,8 +613,6 @@ button {
 
 .card-footer {
     margin-top: 30px;
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
     text-align: center;
     font-size: 11px;
     letter-spacing: 0.08em;
@@ -723,7 +696,6 @@ button {
 
     .col-side {
         padding-left: 48px;
-        border-left: 1px solid var(--border);
     }
 
     .col-side #result {
@@ -751,8 +723,6 @@ button {
     }
 
     .container {
-        box-shadow: none;
-        border: 1px solid #ddd;
         color: #111;
     }
 }
