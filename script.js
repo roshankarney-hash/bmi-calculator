@@ -37,10 +37,10 @@ const BMI_RANGES = {
 };
 
 const CATEGORY_COLORS = {
-    Underweight: "#6f9bc4",
-    Normal: "#c9a24b",
-    Overweight: "#d08c3c",
-    Obese: "#c05b4d",
+    Underweight: "#5b8db8",
+    Normal: "#4ca67d",
+    Overweight: "#d99a3d",
+    Obese: "#e05252",
 };
 
 const RECOMMENDATIONS = {
@@ -411,10 +411,10 @@ function renderTrendChart() {
 
     // Healthy-range zone bands (under / normal / over / obese)
     const zones = [
-        [lo, 18.5, "111, 155, 196"],
-        [18.5, 25, "201, 162, 75"],
-        [25, 30, "208, 140, 60"],
-        [30, hi, "192, 91, 77"],
+        [lo, 18.5, "91, 141, 184"],
+        [18.5, 25, "76, 166, 125"],
+        [25, 30, "217, 154, 61"],
+        [30, hi, "224, 82, 82"],
     ];
     zones.forEach(([from, to, rgb]) => {
         if (to <= lo || from >= hi) return;
@@ -431,8 +431,8 @@ function renderTrendChart() {
 
     // Trend line
     const gradient = ctx.createLinearGradient(0, 0, W, 0);
-    gradient.addColorStop(0, "#a8823c");
-    gradient.addColorStop(1, "#e2c06a");
+    gradient.addColorStop(0, "#d95f42");
+    gradient.addColorStop(1, "#f08b70");
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 2.5;
     ctx.lineJoin = "round";
@@ -473,8 +473,8 @@ let confettiPieces = [];
 let confettiFrame = null;
 
 const CONFETTI_COLORS = [
-    "#c9a24b", "#e2c06a", "#8f6b2e",
-    "#ece5d8", "#b98a3a", "#f4ead2",
+    "#e86a4e", "#f08b70", "#c14f35",
+    "#2b2723", "#d99a3d", "#f6d8ce",
 ];
 
 function fireConfetti() {

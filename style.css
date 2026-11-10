@@ -1,24 +1,24 @@
 /* ==============================
-   BLACK & GOLD — EDITORIAL THEME
+   WARM CREAM & CORAL — LIGHT THEME
    ============================== */
 
 :root {
-    --bg: #0d0c0a;
-    --surface: #141210;
-    --surface-2: #1b1813;
-    --border: #2b261d;
-    --border-strong: #3a3325;
-    --text: #ece5d8;
-    --text-muted: #9a9080;
-    --text-faint: #6b6252;
-    --gold: #c9a24b;
-    --gold-bright: #e2c06a;
-    --ink-on-gold: #17130c;
-    --underweight: #6f9bc4;
-    --normal: #c9a24b;
-    --overweight: #d08c3c;
-    --obese: #c05b4d;
-    --error: #cf6f66;
+    --bg: #faf6f0;
+    --surface: #fffdf9;
+    --surface-2: #f3ece2;
+    --border: #e2d8ca;
+    --border-strong: #d3c5b2;
+    --text: #2b2723;
+    --text-muted: #8a7f72;
+    --text-faint: #b3a795;
+    --gold: #e86a4e;
+    --gold-bright: #f08b70;
+    --ink-on-gold: #fff8f4;
+    --underweight: #5b8db8;
+    --normal: #4ca67d;
+    --overweight: #d99a3d;
+    --obese: #e05252;
+    --error: #d0453c;
 }
 
 * {
@@ -340,7 +340,7 @@ button {
     transition:
         stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1),
         stroke 0.4s;
-    filter: drop-shadow(0 0 5px rgba(201, 162, 75, 0.35));
+    filter: drop-shadow(0 0 5px rgba(232, 106, 78, 0.3));
 }
 
 .ring-content {
@@ -427,6 +427,8 @@ button {
 
 #gaugeMarker circle {
     fill: var(--text);
+    stroke: var(--bg);
+    stroke-width: 2;
 }
 
 .gauge-tick {
