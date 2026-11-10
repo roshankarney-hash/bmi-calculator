@@ -158,26 +158,16 @@
                 <!-- Result (announced to screen readers when it updates) -->
                 <section id="result" aria-live="polite">
 
-                    <h2>Your BMI</h2>
+                    <h2 class="eyebrow">Your result</h2>
 
-                    <!-- Activity ring -->
-                    <div class="ring-wrap">
-
-                        <svg class="ring-svg" viewBox="0 0 120 120" aria-hidden="true">
-                            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
-                            <circle id="ringProgress" class="ring-progress"
-                                    cx="60" cy="60" r="52"></circle>
-                        </svg>
-
-                        <div class="ring-content">
-                            <p id="bmiValue">--</p>
-                            <span class="ring-unit">BMI</span>
-                        </div>
-
+                    <div class="score-block" id="scoreBlock">
+                        <p id="bmiValue">--</p>
+                        <span class="score-unit">Body Mass Index</span>
                     </div>
 
-                    <p id="category">
-                        Enter your details above
+                    <p id="category" class="category">
+                        <span class="cat-dot" id="catDot" aria-hidden="true"></span>
+                        <span id="categoryText">Enter your details above</span>
                     </p>
 
                     <p id="healthyRange" class="healthy-range"></p>
@@ -187,6 +177,9 @@
 
                         <svg class="gauge-svg" viewBox="0 0 200 116" role="img"
                              aria-label="BMI gauge from 15 to 40. Zones: underweight, normal, overweight, obese.">
+
+                            <path class="gauge-track"
+                                  d="M 20 100 A 80 80 0 0 1 180 100"></path>
 
                             <path class="gauge-seg underweight"
                                   d="M 20 100 A 80 80 0 0 1 27.62 65.94"></path>
@@ -227,13 +220,16 @@
                     </div>
 
                     <!-- Recommendation -->
-                    <div id="recommendation">
+                    <div id="recommendation" class="recommendation">
 
-                        <h3>Recommendation</h3>
+                        <h3 class="eyebrow">What this means</h3>
 
-                        <p id="recommendationText">
-                            Your recommendation will appear here.
+                        <p id="recommendationLead" class="rec-lead">
+                            Enter your height and weight to receive a
+                            personalised summary.
                         </p>
+
+                        <ul id="recommendationTips" class="rec-tips" hidden></ul>
 
                     </div>
 
@@ -281,8 +277,6 @@
         </footer>
 
     </main>
-
-    <canvas id="confettiCanvas" aria-hidden="true"></canvas>
 
     <script src="script.js"></script>
 

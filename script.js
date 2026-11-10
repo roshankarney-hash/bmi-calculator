@@ -43,20 +43,120 @@ const CATEGORY_COLORS = {
     Obese: "#e05252",
 };
 
-const RECOMMENDATIONS = {
-    Underweight:
-        "Your BMI is below the normal range. Consider maintaining a balanced diet and discussing healthy weight goals with a healthcare professional.",
-    Normal:
-        "Your BMI is within the normal range. Continue maintaining a balanced diet, regular physical activity, and healthy lifestyle habits.",
-    Overweight:
-        "Your BMI is above the normal range. Regular physical activity and balanced nutrition may help support a healthy weight.",
-    Obese:
-        "Your BMI is in the obesity range. Consider discussing healthy weight-management options with a healthcare professional.",
-};
+/**
+ * Build a contextual, professionally worded summary for a result.
+ * Returns { lead, tips[] } — the lead frames the number, the tips
+ * give concrete, non-judgemental next steps.
+ */
+function buildRecommendation(bmi, category, weightKg, heightCm) {
+    const h = heightCm / 100;
+    const minKg = BMI_RANGES.underMax * h * h;
+    const maxKg = 24.9 * h * h;
+    const fmt = (kg) => (unitSystem === "imperial"
+        ? `${round1(kg / KG_PER_LB)} lb`
+        : `${round1(kg)} kg`);
+
+    switch (category) {
+        case "Underweight":
+            return {
+                lead:
+                    `At ${bmi.toFixed(1)}, your BMI sits below the healthy ` +
+                    "range of 18.5\u201324.9. This usually reflects energy " +
+                    "intake that falls short of your body's needs, rather than " +
+                    "anything to be alarmed by.",
+                tips: [
+                    `Reaching the healthy range would involve gaining roughly ` +
+                        `${fmt(minKg - weightKg)}; a gradual 0.25\u20130.5 kg ` +
+                        "per week is a sustainable pace.",
+                    "Focus on nutrient-dense meals \u2014 adequate protein, " +
+                        "whole grains and healthy fats \u2014 supported by " +
+                        "resistance-based exercise.",
+                    "A conversation with your doctor or a registered dietitian " +
+                        "can rule out underlying causes and personalise a plan.",
+                ],
+            };
+
+        case "Normal":
+            return {
+                lead:
+                    `At ${bmi.toFixed(1)}, your BMI sits within the healthy ` +
+                    "range of 18.5\u201324.9 \u2014 the band associated with " +
+                    "the lowest overall health risk.",
+                tips: [
+                    "Maintain steady habits: balanced meals, around 150 minutes " +
+                        "of moderate activity each week, and sufficient sleep.",
+                    "Small fluctuations within this range are entirely normal; " +
+                        "a periodic recheck is enough.",
+                ],
+            };
+
+        case "Overweight": {
+            const excess = weightKg - maxKg;
+            return {
+                lead:
+                    `At ${bmi.toFixed(1)}, your BMI is modestly above the ` +
+                    "healthy range of 18.5\u201324.9. Even a small change \u2014 " +
+                    "roughly 5\u201310% of body weight \u2014 meaningfully reduces " +
+                    "long-term health risk.",
+                tips: [
+                    excess > 0
+                        ? `Bringing your BMI to 24.9 corresponds to losing ` +
+                          `about ${fmt(excess)}; a gradual 0.25\u20130.5 kg per ` +
+                          "week is a sustainable pace."
+                        : "A modest, gradual reduction in weight is a sound " +
+                          "starting point.",
+                    "Pair a moderate calorie deficit with regular activity you " +
+                        "actually enjoy \u2014 consistency matters more than " +
+                        "intensity.",
+                    "Prioritise sleep and stress management; both influence " +
+                        "appetite and weight regulation.",
+                ],
+            };
+        }
+
+        case "Obese":
+            return {
+                lead:
+                    `At ${bmi.toFixed(1)}, your BMI falls within the obesity ` +
+                    "range (30+), where health risks rise gradually rather than " +
+                    "suddenly. The encouraging part: even modest, sustained " +
+                    "weight loss produces outsized health benefits.",
+                tips: [
+                    "A healthcare professional can help design a plan that fits " +
+                        "your circumstances \u2014 worth doing before making " +
+                        "significant changes.",
+                    "Sustained losses of 5\u201310% of body weight measurably " +
+                        "improve blood pressure, blood sugar and energy levels.",
+                    "Focus on changes you can keep: regular movement, " +
+                        "protein-forward meals, and realistic weekly goals.",
+                ],
+            };
+    }
+}
+
+function renderRecommendation(result) {
+    const rec = buildRecommendation(
+        result.bmi,
+        result.category,
+        result.weightKg,
+        result.heightCm
+    );
+    recommendationLead.textContent = rec.lead;
+    recommendationTips.innerHTML = "";
+    rec.tips.forEach((tip) => {
+        const li = document.createElement("li");
+        li.textContent = tip;
+        recommendationTips.appendChild(li);
+    });
+    recommendationTips.hidden = false;
+}
 
 let unitSystem = store.get("bmi-units", "metric");   // "metric" | "imperial"
 let lastResult = null;                               // most recent calculation
 let countAnim = null;                                // count-up animation handle
+
+const RECOMMENDATION_PLACEHOLDER =
+    "Enter your height and weight to receive a personalised summary.";
 
 // ==========================================
 // GET HTML ELEMENTS
@@ -77,12 +177,14 @@ const heightMetricInput = document.getElementById("height");
 
 const errorElement = document.getElementById("error");
 const bmiElement = document.getElementById("bmiValue");
-const categoryElement = document.getElementById("category");
+const categoryTextElement = document.getElementById("categoryText");
+const catDotElement = document.getElementById("catDot");
 const healthyRangeElement = document.getElementById("healthyRange");
-const recommendationText =
-    document.getElementById("recommendationText");
-const ringProgress = document.getElementById("ringProgress");
+const recommendationLead = document.getElementById("recommendationLead");
+const recommendationTips = document.getElementById("recommendationTips");
 const gaugeMarker = document.getElementById("gaugeMarker");
+const gaugeDot = gaugeMarker ? gaugeMarker.querySelector("circle") : null;
+const scoreBlock = document.getElementById("scoreBlock");
 
 const historyList = document.getElementById("historyList");
 const historyEmpty = document.getElementById("historyEmpty");
@@ -90,10 +192,8 @@ const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 
 const trendChart = document.getElementById("trendChart");
 const chartBlock = document.getElementById("chartBlock");
-const confettiCanvas = document.getElementById("confettiCanvas");
 
-const DEFAULT_BMI_COLOR = "var(--gold)";
-const DEFAULT_CATEGORY_COLOR = "var(--text-muted)";
+const DEFAULT_BMI_COLOR = "var(--text-muted)";
 
 const dateFmt = new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -160,10 +260,11 @@ function setUnitSystem(system, { convert = true } = {}) {
 
     errorElement.textContent = "";
 
-    // Re-render the healthy range in the new units if a result exists
+    // Re-render unit-dependent text if a result exists
     if (lastResult) {
         healthyRangeElement.innerHTML =
             `Healthy weight for your height: <strong>${healthyWeightLabel(lastResult.heightCm)}</strong>`;
+        renderRecommendation(lastResult);
         renderHistory();
     }
 }
@@ -241,29 +342,28 @@ function healthyWeightLabel(heightCm) {
     return `${round1(minKg)}\u2013${round1(maxKg)} kg`;
 }
 
-// Circumference of the activity ring (r = 52)
-const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
-
 /**
- * Fill the activity ring proportionally to BMI (0 → 40 scale)
- * and colour it with the category colour.
+ * Move the gauge marker along the semicircle (scale 15 → 40).
+ * Values outside the displayed range are clamped to the nearest edge,
+ * and the marker takes the category colour so the reading stays clear.
  */
-function setRing(bmi, color) {
-    const pct = Math.min(Math.max(bmi / 40, 0), 1);
-    ringProgress.style.stroke = color;
-    ringProgress.style.color = color; // drives the glow (currentColor)
-    ringProgress.style.strokeDashoffset =
-        String(RING_CIRCUMFERENCE * (1 - pct));
-}
-
-/**
- * Move the gauge needle along the semicircle (scale 15 → 40).
- */
-function setGauge(bmi) {
+function setGauge(bmi, color) {
     const clamped = Math.min(Math.max(bmi, 15), 40);
     const deg = ((clamped - 15) / 25) * 180;
     gaugeMarker.style.opacity = "1";
     gaugeMarker.style.transform = `rotate(${deg}deg)`;
+    if (gaugeDot) gaugeDot.style.fill = color;
+}
+
+/**
+ * Gentle emphasis animation when a new result lands —
+ * replaces the old full-screen confetti.
+ */
+function pulseResult() {
+    if (!scoreBlock) return;
+    scoreBlock.classList.remove("pulse");
+    void scoreBlock.offsetWidth; // restart the animation
+    scoreBlock.classList.add("pulse");
 }
 
 function classify(bmi) {
@@ -466,82 +566,6 @@ function renderTrendChart() {
 }
 
 // ==========================================
-// CONFETTI (pure canvas, no libraries)
-// ==========================================
-
-let confettiPieces = [];
-let confettiFrame = null;
-
-const CONFETTI_COLORS = [
-    "#e86a4e", "#f08b70", "#c14f35",
-    "#2b2723", "#d99a3d", "#f6d8ce",
-];
-
-function fireConfetti() {
-    const dpr = window.devicePixelRatio || 1;
-    confettiCanvas.width = window.innerWidth * dpr;
-    confettiCanvas.height = window.innerHeight * dpr;
-
-    const ctx = confettiCanvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-
-    confettiPieces = Array.from({ length: 140 }, () => ({
-        x: W / 2 + (Math.random() - 0.5) * 140,
-        y: H * 0.22 + (Math.random() - 0.5) * 60,
-        vx: (Math.random() - 0.5) * 13,
-        vy: -(5 + Math.random() * 9),
-        size: 5 + Math.random() * 7,
-        rot: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.3,
-        color:
-            CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-        shape: Math.random() < 0.5 ? "strip" : "circle",
-    }));
-
-    if (!confettiFrame) animateConfetti();
-}
-
-function animateConfetti() {
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    const ctx = confettiCanvas.getContext("2d");
-
-    ctx.clearRect(0, 0, W, H);
-    confettiPieces = confettiPieces.filter((p) => p.y < H + 30);
-
-    confettiPieces.forEach((p) => {
-        p.vy += 0.22;       // gravity
-        p.vx *= 0.992;      // air drag
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rot += p.rotSpeed;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        if (p.shape === "strip") {
-            ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-        } else {
-            ctx.beginPath();
-            ctx.arc(0, 0, p.size / 2.4, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.restore();
-    });
-
-    if (confettiPieces.length > 0) {
-        confettiFrame = requestAnimationFrame(animateConfetti);
-    } else {
-        confettiFrame = null;
-        ctx.clearRect(0, 0, W, H);
-    }
-}
-
-// ==========================================
 // FORM SUBMISSION (Enter key + button)
 // ==========================================
 
@@ -566,18 +590,16 @@ bmiForm.addEventListener("submit", function (event) {
 
     // Display result
     animateBmiValue(bmi);
-    categoryElement.textContent = category;
-    categoryElement.style.color = color;
+    categoryTextElement.textContent = category;
+    categoryTextElement.parentElement.style.color = color;
+    catDotElement.style.background = color;
     bmiElement.style.color = color;
-    recommendationText.textContent = RECOMMENDATIONS[category];
+    renderRecommendation(lastResult);
     healthyRangeElement.innerHTML =
         `Healthy weight for your height: <strong>${range}</strong>`;
 
-    setRing(bmi, color);
-    setGauge(bmi);
-
-    // Celebrate a healthy result 🎉
-    if (category === "Normal") fireConfetti();
+    setGauge(bmi, color);
+    pulseResult();
 
     // Save to history
     addHistoryEntry({
@@ -606,20 +628,20 @@ resetBtn.addEventListener("click", function () {
     bmiElement.style.color = DEFAULT_BMI_COLOR;
 
     // Reset category
-    categoryElement.textContent = "Enter your details above";
-    categoryElement.style.color = DEFAULT_CATEGORY_COLOR;
+    categoryTextElement.textContent = "Enter your details above";
+    categoryTextElement.parentElement.style.color = "";
+    catDotElement.style.background = "transparent";
 
     // Reset healthy range
     healthyRangeElement.textContent = "";
 
     // Reset recommendation
-    recommendationText.textContent =
-        "Your recommendation will appear here.";
+    recommendationLead.textContent = RECOMMENDATION_PLACEHOLDER;
+    recommendationTips.hidden = true;
+    recommendationTips.innerHTML = "";
 
-    // Reset ring and gauge
-    ringProgress.style.stroke = "var(--gold)";
-    ringProgress.style.color = "";
-    ringProgress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
+    // Reset gauge
+    if (gaugeDot) gaugeDot.style.fill = "";
     gaugeMarker.style.opacity = "0";
     gaugeMarker.style.transform = "rotate(0deg)";
 });
